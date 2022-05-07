@@ -29,9 +29,9 @@ button9_surface = pygame.image.load('images/Button_9.png').convert()
 
 
 # Rects for Surfaces
-title_rect = title_surface.get_rect     (midleft = (250, 30))
-author_rect = author_surface.get_rect   (midleft = (285, 100))
-match_rect = match_surface.get_rect     (midleft = (375, 175))
+title_rect = title_surface.get_rect     (center = (400, 30))
+author_rect = author_surface.get_rect   (center = (400, 100))
+match_rect = match_surface.get_rect     (center = (400, 175))
 button5_rect = button5_surface.get_rect (midleft = (50, 300))
 button7_rect = button7_surface.get_rect (midleft = (300, 300))
 button9_rect = button9_surface.get_rect (midleft = (550, 300))
@@ -50,7 +50,7 @@ while True:
         if event.type == pygame.VIDEORESIZE:
             screen = pygame.display.set_mode((event.w, event.h), pygame.RESIZABLE)
         if event.type == pygame.MOUSEMOTION:
-            if button5_rect.collidepoint(event.pos):
+            if button5_rect.collidepoint(event.pos) and pygame.MOUSEBUTTONDOWN:
                 flag = 1
     
     if flag == 0:
@@ -65,6 +65,11 @@ while True:
         screen.blit(pygame.transform.scale(resize_screen, screen.get_rect().size), (0, 0))
         pygame.display.flip()
 
+    elif flag == 1:
+        mouse_pos = pygame.mouse.get_pos()
+        resize_screen.blit(backg_surface, (0, 0))
+        screen.blit(pygame.transform.scale(resize_screen, screen.get_rect().size), (0, 0))
+        pygame.display.flip()
     pygame.display.update()
     clock.tick(60)
 
