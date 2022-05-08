@@ -1,5 +1,6 @@
 import pygame
 import sys
+import random
 
 pygame.init()
 pygame.display.set_caption('Game of Nim')
@@ -11,6 +12,7 @@ initial = True
 active = False
 aiMove = ''
 userText = ''
+victoryText = ''
 turn = 0
 xpos = 0
 ypos = 0
@@ -19,48 +21,47 @@ board = list()
 moves = list()
 
 # Fonts and Colors
-test_font = pygame.font.Font('font/arial.ttf', 50)
+text_font = pygame.font.Font('font/arial.ttf', 50)
 author_font = pygame.font.Font('font/arial.ttf', 25)
 color_active = pygame.Color('lightskyblue3')
 color_passive = pygame.Color('Grey')
 color = color_passive
 
+
 # Screens and Surfaces
-screen = pygame.display.set_mode((800, 400), pygame.RESIZABLE)
+screen = pygame.display.set_mode((1600, 800), pygame.RESIZABLE)
 resize_screen = screen.copy()
 backg_surface = pygame.image.load('images/Grey_Background.png').convert()
 
-title_surface = test_font.render('Game of Nim', False, 'Black')
+title_surface = text_font.render('Game of Nim', False, 'Black')
 author_surface = author_font.render('by Edmond Tongyou', False, 'Black')
 
 match_surface = pygame.image.load('images/Matchstick.png').convert_alpha()
 button5_surface = pygame.image.load('images/Button_5.png').convert()
 button7_surface = pygame.image.load('images/Button_7.png').convert()
 button9_surface = pygame.image.load('images/Button_9.png').convert()
-text_surface = test_font.render(userText, True, 'Black')
+text_surface = text_font.render(userText, True, 'Black')
+victory_surface = text_font.render(victoryText, True, 'Black')
 
 
 # Rects for Surfaces
-title_rect = title_surface.get_rect     (center = (400, 30))
-author_rect = author_surface.get_rect   (center = (400, 100))
-match_rect = match_surface.get_rect     (center = (400, 175))
-button5_rect = button5_surface.get_rect (midleft = (50, 300))
-button7_rect = button7_surface.get_rect (midleft = (300, 300))
-button9_rect = button9_surface.get_rect (midleft = (550, 300))
-text_rect = text_surface.get_rect       (center = (650, 35) )
+title_rect = title_surface.get_rect     (center = (800, 60))
+author_rect = author_surface.get_rect   (center = (800, 200))
+match_rect = match_surface.get_rect     (center = (800, 350))
+button5_rect = button5_surface.get_rect (midleft = (100, 600))
+button7_rect = button7_surface.get_rect (midleft = (600, 600))
+button9_rect = button9_surface.get_rect (midleft = (1100, 600))
+text_rect = text_surface.get_rect       (center = (1100, 400))
+victory_rect = victory_surface.get_rect (center = (1100, 600))
 
-# Helper methods
-def aiAction(board, move):
-    pass
 
-def playerAction(move):
-    global moves
+# Helper Functions
+def aiAction():
     global board
-    move = eval(move)
+    global moves
+    global turn
+    move = random.choice(moves)
     x = board[move[0]]
-    if move not in moves:
-        print("Not in moves")
-        return
 
     # Sets deadStates based off board position - move made
     # Sets board as board position - move made    
@@ -77,9 +78,82 @@ def playerAction(move):
     else:
         for index in range(0, deadStates):
             moves.remove(((move[0]), (x-index)))
-    moves = moves
     board = board
-    return board, moves
+    moves = moves
+    turn = 0
+    return board, moves, turn
+
+def playerAction(move):
+    global board
+    global moves
+    global turn
+    move = eval(move)
+    x = board[move[0]]
+    if move not in moves:
+        print('Not in moves')
+        return 'Redo'
+
+    # Sets deadStates based off board position - move made
+    # Sets board as board position - move made    
+    deadStates = move[1]
+    board[move[0]] = board[move[0]] - move[1]
+    
+    # If deadStates is 0 then all moves for board position must be removed so x position gets moved
+    # Checks if there is only 1 move and only removes that if that is the case
+    if deadStates == 0:
+        deadStates = move[1]
+        x = (moves.index(move) - (moves.index(move) - deadStates - 2))
+    if len(moves) == 1:
+        moves.remove(moves[0])
+    else:
+        for index in range(0, deadStates):
+            moves.remove(((move[0]), (x-index)))
+    board = board
+    moves = moves
+    turn = 1
+    return board, moves, turn
+
+def displayBoard():
+    global board
+    global moves
+    global xpos
+    global ypos
+    for index in range (0, len(board)):
+        for count in range (0, board[index]):
+            match_rect = match_surface.get_rect(topleft = (xpos, ypos))
+            resize_screen.blit(match_surface, match_rect)
+            xpos += 100
+        xpos = 0
+        ypos += 200
+    ypos = 0
+    resize_screen.blit(text_surface, (text_rect.x+5, text_rect.y-5))
+    text_rect.w = max(125, text_surface.get_width()+10)
+    resize_screen.blit(victory_surface, victory_rect)
+    screen.blit(pygame.transform.scale(resize_screen, screen.get_rect().size), (0, 0))
+    pygame.display.flip()
+    board = board
+    moves = moves
+    xpos = xpos
+    ypos = ypos
+    return board, moves, xpos, ypos
+
+def displayVictory():
+    global victoryText
+    global victory_surface
+    global turn
+    if turn == 0:
+        victoryText = 'Player Wins!'
+        victory_surface = text_font.render(victoryText, True, 'Black')
+    else:
+        victoryText = 'Computer Wins!'
+        victory_surface = text_font.render(victoryText, True, 'Black')
+    resize_screen.blit(text_surface, (text_rect.x+5, text_rect.y-5))
+    text_rect.w = max(125, text_surface.get_width()+10)
+    resize_screen.blit(victory_surface, victory_rect)
+    screen.blit(pygame.transform.scale(resize_screen, screen.get_rect().size), (0, 0))
+    pygame.display.flip()
+    return victoryText
+
 
 # Draws and Updates the game
 while True:
@@ -88,19 +162,27 @@ while True:
         if event.type == pygame.QUIT:
             pygame.quit()
             exit()
+
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_BACKSPACE:
                 userText = userText[:-1]
-                text_surface = test_font.render(userText, True, 'Black')
+                text_surface = text_font.render(userText, True, 'Black')
             elif event.key == pygame.K_RETURN:
-                playerAction(userText)
-                aiAction(aiMove)
+                if userText.isupper() == False and userText.islower() == False and len(userText) == 6 and eval(userText) in moves:
+                    playerAction(userText)
+                    if len(moves) != 0:
+                        aiAction()
+                    userText = ''
+                    move = ''
+                    text_surface = text_font.render(userText, True, 'Black')
+                else:
+                    pass
             else:
                 if len(userText) >= 6:
                     pass
                 else:
                     userText += event.unicode
-                    text_surface = test_font.render(userText, True, 'Black')
+                    text_surface = text_font.render(userText, True, 'Black')
 
         if event.type == pygame.VIDEORESIZE:
             screen = pygame.display.set_mode((event.w, event.h), pygame.RESIZABLE)
@@ -114,11 +196,13 @@ while True:
                 flag = 3
             elif text_rect.collidepoint(event.pos):
                 active = True
-    
+
+
     if active:
         color = color_active
     else:
         color = color_passive
+
 
     # States of the Game
     if flag == 0:
@@ -143,50 +227,55 @@ while True:
             for index in range(0, len(board)):
                 x = index
                 moves += ([((x, y)) for y in range(1, board[index] + 1)])
-            for index in range (0, len(board)):
-                for count in range (0, board[index]):
-                    match_rect = match_surface.get_rect     (topleft = (xpos, ypos))
-                    resize_screen.blit(match_surface, match_rect)
-                    xpos += 50
-                xpos = 0
-                ypos += 100
-            ypos = 0
-            resize_screen.blit(text_surface, text_rect)
-            text_rect.w = max(100, text_surface.get_width()+10)
-            screen.blit(pygame.transform.scale(resize_screen, screen.get_rect().size), (0, 0))
-            pygame.display.flip()
+            displayBoard()
             initial = False
         
         # Generates list of moves
         else:
             # Draws matches based off board
-            for index in range (0, len(board)):
-                for count in range (0, board[index]):
-                    match_rect = match_surface.get_rect     (topleft = (xpos, ypos))
-                    resize_screen.blit(match_surface, match_rect)
-                    xpos += 50
-                xpos = 0
-                ypos += 100
-            ypos = 0
-            resize_screen.blit(text_surface, (text_rect.x+5, text_rect.y+5))
-            text_rect.w = max(100, text_surface.get_width()+10)
-            screen.blit(pygame.transform.scale(resize_screen, screen.get_rect().size), (0, 0))
-            pygame.display.flip()
+            displayBoard()
 
 
     elif flag == 2:
         mouse_pos = pygame.mouse.get_pos()
+        resize_screen.blit(backg_surface, (0, 0))
+        pygame.draw.rect(resize_screen, color, text_rect)
+        # Initalizes Board and Draws current Board
         if initial == True:
             board = [7, 5, 3, 1]
+            for index in range(0, len(board)):
+                x = index
+                moves += ([((x, y)) for y in range(1, board[index] + 1)])
+            displayBoard()
             initial = False
+        
+        # Generates list of moves
+        else:
+            # Draws matches based off board
+            displayBoard()
 
     elif flag == 3:
         mouse_pos = pygame.mouse.get_pos()
+        resize_screen.blit(backg_surface, (0, 0))
+        pygame.draw.rect(resize_screen, color, text_rect)
+        # Initalizes Board and Draws current Board
         if initial == True:
             board = [9, 7, 5, 3, 1]
+            for index in range(0, len(board)):
+                x = index
+                moves += ([((x, y)) for y in range(1, board[index] + 1)])
+            displayBoard()
             initial = False
+        
+        # Generates list of moves
+        else:
+            # Draws matches based off board
+            displayBoard()
 
-    if len(moves) == 0:
-        pass
+    if len(moves) == 0 and flag != 0:
+        if turn == 0:
+            displayVictory()
+        else:
+            displayVictory()
     pygame.display.update()
-    clock.tick(600)
+    clock.tick(60)
