@@ -57,9 +57,7 @@ victory_rect = victory_surface.get_rect (center = (1100, 600))
 
 # Helper Functions
 def aiAction():
-    global board
-    global moves
-    global turn
+    global board, moves, turn
     move = random.choice(moves)
     x = board[move[0]]
 
@@ -84,9 +82,7 @@ def aiAction():
     return board, moves, turn
 
 def playerAction(move):
-    global board
-    global moves
-    global turn
+    global board, moves, turn
     move = eval(move)
     x = board[move[0]]
     if move not in moves:
@@ -114,10 +110,7 @@ def playerAction(move):
     return board, moves, turn
 
 def displayBoard():
-    global board
-    global moves
-    global xpos
-    global ypos
+    global board, moves, xpos, ypos
     for index in range (0, len(board)):
         for count in range (0, board[index]):
             match_rect = match_surface.get_rect(topleft = (xpos, ypos))
@@ -138,9 +131,7 @@ def displayBoard():
     return board, moves, xpos, ypos
 
 def displayVictory():
-    global victoryText
-    global victory_surface
-    global turn
+    global victoryText, victory_surface, turn
     if turn == 0:
         victoryText = 'Player Wins!'
         victory_surface = text_font.render(victoryText, True, 'Black')
