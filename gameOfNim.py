@@ -58,7 +58,20 @@ victory_rect = victory_surface.get_rect (center = (1100, 600))
 # Helper Functions
 def aiAction():
     global board, moves, turn
-    move = random.choice(moves)
+    flag = True
+    sum = 0
+    for index in range(0, len(board)):
+        sum += board[index]
+    
+    # Nim Sums are always Even therefore we can just check if the move selected is even or not
+    while(flag):
+        move = random.choice(moves)
+        if sum % 2 == 0:
+            if move[1] % 2 == 0:
+                flag = False
+        else:
+            if move[1] % 2 != 0:
+                flag = False
     x = board[move[0]]
 
     # Sets deadStates based off board position - move made
@@ -269,4 +282,3 @@ while True:
         else:
             displayVictory()
     pygame.display.update()
-    clock.tick(60)
